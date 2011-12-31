@@ -31,6 +31,18 @@
     // Release any cached data, images, etc that aren't in use.
 }
 
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    
+    if ([segue.identifier isEqualToString:@"AddPlayer"]) {
+        UINavigationController *navigationController = segue.destinationViewController;
+        
+        PlayerDetailsViewController *playerDetailsViewController = [[navigationController viewControllers] objectAtIndex:0];
+        
+        playerDetailsViewController.delegate = self;
+    }
+}
+
+
 #pragma mark - View lifecycle
 
 - (void)viewDidLoad
@@ -168,6 +180,26 @@
      // Pass the selected object to the new view controller.
      [self.navigationController pushViewController:detailViewController animated:YES];
      */
+}
+
+#pragma --
+#pragma PlayerDetailsViewControllerDelegate
+
+-(void)playerDetailsViewControllerDidCancel:(PlayerDetailsViewController *)controller {
+    
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+-(void)playerDetailsViewController:(PlayerDetailsViewController *)controller didAddPlayer:(Player *)player {
+    
+    [self.players addObject:player];
+    
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[self.players count] - 1  inSection:0];
+    
+    [self.tableView insertRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    
+     
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end
