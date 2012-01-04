@@ -1,29 +1,18 @@
 //
-//  PlayerDetailsViewController.m
+//  GamePickerViewController.m
 //  Ratings
 //
-//  Created by Jianjun Yu on 12/31/11.
-//  Copyright (c) 2011 __MyCompanyName__. All rights reserved.
+//  Created by Jianjun Yu on 1/4/12.
+//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
-#import "PlayerDetailsViewController.h"
-#import "Player.h"
+#import "GamePickerViewController.h"
 
-@implementation PlayerDetailsViewController
 
+@implementation GamePickerViewController
+
+@synthesize game;
 @synthesize delegate;
-@synthesize nameTextField;
-@synthesize detailLabel;
-
--(id)initWithCoder:(NSCoder *)aDecoder {
-    
-    if (self = [super initWithCoder:aDecoder]) {
-        
-        game = @"Chess";
-    }
-    
-    return  self;
-}
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -42,35 +31,6 @@
     // Release any cached data, images, etc that aren't in use.
 }
 
--(IBAction)cancel:(id)sender {
-    
-    
-    [self.delegate playerDetailsViewControllerDidCancel:self];
-    
-}
-
--(IBAction)done:(id)sender {
-    Player *player = [[Player alloc] init];
-    
-    player.name = self.nameTextField.text;
-    player.game = game;
-    player.rating = 1;
-
-    
-    [self.delegate playerDetailsViewController:self didAddPlayer:player];
-    
-}
-
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    
-    if ([segue.identifier isEqualToString:@"PickGame"]) {
-        GamePickerViewController *gamePickerViewController = segue.destinationViewController;
-        
-        gamePickerViewController.delegate = self;
-        gamePickerViewController.game = game;
-    }
-}
-
 #pragma mark - View lifecycle
 
 - (void)viewDidLoad
@@ -83,17 +43,18 @@
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
+    games = [NSArray arrayWithObjects:@"Angry Birds", @"Chess", @"Russian Roulette", @"Spin the Bottle", @"Texas Hold'em Poker",@"Tic-Tac-Toe", nil];
     
-    self.detailLabel.text = game;
+    selectedIndex = [games indexOfObject:self.game];
 }
 
 - (void)viewDidUnload
 {
-    [self setNameTextField:nil];
-    [self setDetailLabel:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
+    
+    games = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -120,6 +81,39 @@
 {
     // Return YES for supported orientations
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
+}
+
+#pragma mark - Table view data source
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    // Return the number of sections.
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    // Return the number of rows in the section.
+    return [games count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+   
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"GameCell"];
+    
+    cell.textLabel.text = [games objectAtIndex:indexPath.row];
+    
+    if (indexPath.row == selectedIndex) {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }else {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    
+    
+    // Configure the cell...
+    
+    return cell;
 }
 
 /*
@@ -173,21 +167,23 @@
      [self.navigationController pushViewController:detailViewController animated:YES];
      */
     
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    if (indexPath.section == 0) {
-        [self.nameTextField becomeFirstResponder];
+    if (selectedIndex != NSNotFound) {
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:selectedIndex inSection:0]];
+        
+        cell.accessoryType = UITableViewCellAccessoryNone;
     }
-}
-
-#pragma mark - GamePickerViewControllerDelegate
-
--(void)gamePickerViewController:(GamePickerViewController *)controller didSelectGame:(NSString *)theGame {
-    game = theGame;
     
-    self.detailLabel.text = game;
+    selectedIndex = indexPath.row;
     
-    [self.navigationController popViewControllerAnimated:YES];
-
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    
+    cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    
+    NSString *theGame = [games objectAtIndex:selectedIndex];
+    
+    [self.delegate gamePickerViewController:self didSelectGame:theGame];
 }
 
 @end
